@@ -1,0 +1,22 @@
+{
+  "name": "ramadan",
+  "version": "1.0.0",
+  "description": "Ramadan jadvali uchun grammY Telegram bot (Ramazon API).",
+  "main": "src/bot.js",
+  "scripts": {
+    "start": "node src/bot.js",
+    "start:prod": "NODE_ENV=production TYPEORM_SYNCHRONIZE=false node src/bot.js",
+    "check": "node --check src/bot.js && node --check src/sajdaClient.js && node --check src/db.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "cheerio": "^1.1.2",
+    "dotenv": "^17.2.3",
+    "grammy": "^1.39.3",
+    "pg": "^8.16.3",
+    "typeorm": "^0.3.27"
+  }
+}
