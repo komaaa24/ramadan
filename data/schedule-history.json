@@ -1,0 +1,130 @@
+{
+  "data": {
+    "2026-02-20": {
+      "apiDate": "2026-02-20",
+      "fetchedAt": "2026-02-19T13:04:49.639Z",
+      "rowsByRegion": {
+        "sirdaryo": {
+          "region": "Sirdaryo",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "6:00",
+          "iftor": "18:14",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        },
+        "samarqand": {
+          "region": "Samarqand",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "6:02",
+          "iftor": "18:16",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        },
+        "fargona": {
+          "region": "Farg'ona",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "5:43",
+          "iftor": "17:57",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        },
+        "namangan": {
+          "region": "Namangan",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "5:43",
+          "iftor": "17:57",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        },
+        "qarshi": {
+          "region": "Qarshi",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "6:04",
+          "iftor": "18:18",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        },
+        "xorazm": {
+          "region": "Xorazm",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "6:28",
+          "iftor": "18:42",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        },
+        "andijon": {
+          "region": "Andijon",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "5:41",
+          "iftor": "17:55",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        },
+        "toshkent": {
+          "region": "Toshkent",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "5:53",
+          "iftor": "18:07",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        },
+        "jizzax": {
+          "region": "Jizzax",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "5:59",
+          "iftor": "18:13",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        },
+        "surxandaryo": {
+          "region": "Surxandaryo",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "6:06",
+          "iftor": "18:20",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        },
+        "navoiy": {
+          "region": "Navoiy",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "6:12",
+          "iftor": "18:26",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        },
+        "shaxrisabz": {
+          "region": "Shaxrisabz",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "6:03",
+          "iftor": "18:17",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        },
+        "buxoro": {
+          "region": "Buxoro",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "6:14",
+          "iftor": "18:28",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        },
+        "qoraqton": {
+          "region": "Qoraq-ton",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "6:35",
+          "iftor": "18:49",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        },
+        "qoqon": {
+          "region": "Qo'qon",
+          "apiDate": "2026-02-20",
+          "saharlikEnd": "5:46",
+          "iftor": "18:00",
+          "saharlikDua": "Duosi: Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala, Allohu akbar.",
+          "iftorDua": "Duosi: Allohumma laka sumtu va bika amantu va alayka tavakkaltu va 'ala rizqika aftartu, fag'firliy ya G'offaru ma qoddamtu va ma axxortu"
+        }
+      }
+    }
+  }
+}

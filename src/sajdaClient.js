@@ -1,4 +1,6 @@
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 const { CITIES } = require("./cities");
 
 const cache = new Map();
@@ -15,6 +17,9 @@ function toPositiveInt(value, fallback) {
 const API_TIMEOUT_MS = toPositiveInt(process.env.API_TIMEOUT_MS, 15000);
 const API_RETRY_COUNT = toPositiveInt(process.env.API_RETRY_COUNT, 3);
 const API_RETRY_DELAY_MS = toPositiveInt(process.env.API_RETRY_DELAY_MS, 700);
+const HISTORY_LIMIT_DAYS = toPositiveInt(process.env.SCHEDULE_HISTORY_LIMIT_DAYS, 14);
+const HISTORY_FILE = process.env.SCHEDULE_HISTORY_FILE || path.join(__dirname, "..", "data", "schedule-history.json");
+const historyByDate = new Map();
 
 function normalizeText(value) {
   return String(value || "")
@@ -103,6 +108,83 @@ function findRowForCity(rowsByRegion, city) {
   return null;
 }
 
+function mapToObject(map) {
+  const out = {};
+  for (const [key, value] of map.entries()) out[key] = value;
+  return out;
+}
+
+function objectToMap(value) {
+  const map = new Map();
+  Object.entries(value || {}).forEach(([key, row]) => {
+    map.set(key, row);
+  });
+  return map;
+}
+
+function pruneHistory() {
+  const keys = [...historyByDate.keys()].sort();
+  while (keys.length > HISTORY_LIMIT_DAYS) {
+    const key = keys.shift();
+    historyByDate.delete(key);
+  }
+}
+
+function saveHistoryToDisk() {
+  try {
+    const dir = path.dirname(HISTORY_FILE);
+    fs.mkdirSync(dir, { recursive: true });
+    const data = {};
+    for (const [date, snapshot] of historyByDate.entries()) {
+      data[date] = {
+        apiDate: snapshot.apiDate,
+        fetchedAt: snapshot.fetchedAt,
+        rowsByRegion: mapToObject(snapshot.rowsByRegion),
+      };
+    }
+    fs.writeFileSync(HISTORY_FILE, JSON.stringify({ data }, null, 2));
+  } catch (error) {
+    // Keep runtime unaffected if disk write fails.
+    console.warn("History save failed:", error?.message || error);
+  }
+}
+
+function loadHistoryFromDisk() {
+  try {
+    if (!fs.existsSync(HISTORY_FILE)) return;
+    const parsed = JSON.parse(fs.readFileSync(HISTORY_FILE, "utf8"));
+    Object.entries(parsed?.data || {}).forEach(([date, snapshot]) => {
+      if (!date) return;
+      historyByDate.set(date, {
+        apiDate: snapshot?.apiDate || date,
+        fetchedAt: snapshot?.fetchedAt || null,
+        rowsByRegion: objectToMap(snapshot?.rowsByRegion),
+      });
+    });
+    pruneHistory();
+  } catch (error) {
+    console.warn("History load failed:", error?.message || error);
+  }
+}
+
+function rememberSnapshot(payload) {
+  if (!payload?.apiDate || !payload?.rowsByRegion) return;
+  historyByDate.set(payload.apiDate, {
+    apiDate: payload.apiDate,
+    fetchedAt: payload.fetchedAt || new Date().toISOString(),
+    rowsByRegion: payload.rowsByRegion,
+  });
+  pruneHistory();
+  saveHistoryToDisk();
+}
+
+function getSnapshotByDate(targetDate) {
+  if (!targetDate) return null;
+  return historyByDate.get(targetDate) || null;
+}
+
+loadHistoryFromDisk();
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -159,25 +241,38 @@ async function fetchRamazonSchedule({ force = false } = {}) {
   };
 
   cache.set(cacheKey, { ts: now, payload });
+  rememberSnapshot(payload);
   return payload;
 }
 
-async function fetchCitySchedule(cityKey, { force = false } = {}) {
+async function fetchCitySchedule(cityKey, { force = false, targetDate = null, allowFutureFallback = true } = {}) {
   const city = findCityByKey(cityKey);
   if (!city) throw new Error(`Unknown city: ${cityKey}`);
 
   const schedule = await fetchRamazonSchedule({ force });
-  const row = findRowForCity(schedule.rowsByRegion, city);
+  let selectedSchedule = schedule;
+  if (targetDate && targetDate !== schedule.apiDate) {
+    const snapshot = getSnapshotByDate(targetDate);
+    if (snapshot) {
+      selectedSchedule = snapshot;
+    } else if (!allowFutureFallback) {
+      throw new Error(`${targetDate} sana uchun jadval hali topilmadi. Keyinroq Yangilash ni bosing.`);
+    }
+  }
+
+  const row = findRowForCity(selectedSchedule.rowsByRegion, city);
   if (!row) {
     throw new Error(`${city.name} uchun APIda jadval topilmadi`);
   }
 
   return {
     city,
-    row,
+    row: { ...row, apiDate: selectedSchedule.apiDate || row.apiDate || schedule.apiDate },
     rows: [row],
-    apiDate: schedule.apiDate,
-    fetchedAt: schedule.fetchedAt,
+    apiDate: selectedSchedule.apiDate || schedule.apiDate,
+    fetchedAt: selectedSchedule.fetchedAt || schedule.fetchedAt,
+    sourceApiDate: schedule.apiDate,
+    usedHistory: selectedSchedule !== schedule,
   };
 }
 

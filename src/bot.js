@@ -372,8 +372,10 @@ bot.callbackQuery(/^city\|(.+)/, async (ctx) => {
 
   try {
     await upsertUserFromContext(ctx, { cityKey });
-    const payload = await fetchCitySchedule(cityKey);
-    await replyOrEdit(ctx, formatDayMessage(payload.city, payload.row, "Joriy jadval"), buildCityActions(cityKey));
+    const todayIso = getNowInTashkent().isoDate;
+    const payload = await fetchCitySchedule(cityKey, { targetDate: todayIso, allowFutureFallback: true });
+    const label = payload.apiDate === todayIso ? "Bugungi jadval" : "Ertangi jadval (API)";
+    await replyOrEdit(ctx, formatDayMessage(payload.city, payload.row, label), buildCityActions(cityKey));
   } catch (error) {
     await replyOrEdit(ctx, `Xatolik: ${escapeHtml(error.message || "jadvalni olishda xatolik")}`, buildCityKeyboard());
   }
@@ -387,8 +389,14 @@ bot.callbackQuery(/^(today|refresh)\|(.+)/, async (ctx) => {
 
   try {
     await upsertUserFromContext(ctx, { cityKey });
-    const payload = await fetchCitySchedule(cityKey, { force });
-    await replyOrEdit(ctx, formatDayMessage(payload.city, payload.row, "Joriy jadval"), buildCityActions(cityKey));
+    const todayIso = getNowInTashkent().isoDate;
+    const payload = await fetchCitySchedule(cityKey, {
+      force,
+      targetDate: todayIso,
+      allowFutureFallback: true,
+    });
+    const label = payload.apiDate === todayIso ? "Bugungi jadval" : "Ertangi jadval (API)";
+    await replyOrEdit(ctx, formatDayMessage(payload.city, payload.row, label), buildCityActions(cityKey));
   } catch (error) {
     await replyOrEdit(ctx, `Xatolik: ${escapeHtml(error.message || "jadvalni olishda muammo")}`, buildCityActions(cityKey));
   }
@@ -400,8 +408,10 @@ bot.callbackQuery(/^(tomorrow|month)\|(.+)/, async (ctx) => {
 
   try {
     await upsertUserFromContext(ctx, { cityKey });
-    const payload = await fetchCitySchedule(cityKey);
-    await replyOrEdit(ctx, formatDayMessage(payload.city, payload.row, "Joriy jadval"), buildCityActions(cityKey));
+    const todayIso = getNowInTashkent().isoDate;
+    const payload = await fetchCitySchedule(cityKey, { targetDate: todayIso });
+    const label = payload.apiDate === todayIso ? "Bugungi jadval" : "Ertangi jadval (API)";
+    await replyOrEdit(ctx, formatDayMessage(payload.city, payload.row, label), buildCityActions(cityKey));
   } catch (error) {
     await replyOrEdit(ctx, `Xatolik: ${escapeHtml(error.message || "jadvalni olishda muammo")}`, buildCityActions(cityKey));
   }
