@@ -18,6 +18,8 @@ const TASHKENT_TZ = "Asia/Tashkent";
 const NOTIFY_CHECK_INTERVAL_MS = 60 * 1000;
 const SAHARLIK_NOTICE_WINDOW_START_MINUTES = 21 * 60;
 const SAHARLIK_NOTICE_WINDOW_END_MINUTES = 21 * 60 + 5;
+const IFTOR_NOTICE_WINDOW_START_MINUTES = 10 * 60;
+const IFTOR_NOTICE_WINDOW_END_MINUTES = 10 * 60 + 5;
 const DEFAULT_CITY_KEY = process.env.DEFAULT_CITY_KEY || "toshkent";
 
 const TEST_MODE = process.env.TEST_MODE === "true";
@@ -236,11 +238,13 @@ function shouldSendIftorReminder(now, row, userLastIftorDate, apiDate) {
   if (!apiDate || normalizeDate(userLastIftorDate) === apiDate) return false;
   if (now.isoDate !== apiDate) return false;
 
-  const saharlikMinutes = parseTimeToMinutes(row.saharlikEnd);
   const iftorMinutes = parseTimeToMinutes(row.iftor);
-  if (!Number.isFinite(saharlikMinutes) || !Number.isFinite(iftorMinutes)) return false;
+  if (!Number.isFinite(iftorMinutes)) return false;
 
-  return now.minutesOfDay > saharlikMinutes && now.minutesOfDay < iftorMinutes;
+  return (
+    now.minutesOfDay >= IFTOR_NOTICE_WINDOW_START_MINUTES &&
+    now.minutesOfDay <= IFTOR_NOTICE_WINDOW_END_MINUTES
+  );
 }
 
 function startNotificationScheduler(botInstance) {
@@ -348,7 +352,7 @@ async function replyOrEdit(ctx, text, keyboard) {
 async function sendCityMenu(ctx, hint) {
   const intro =
     hint ||
-    "Assalomu alaykum! Shaharni tanlang. Bot sizga har kuni 21:00-21:05 oralig'ida ertangi saharlik va saharlikdan keyin bugungi iftorlik vaqtini yuboradi.";
+    "Assalomu alaykum! Shaharni tanlang. Bot sizga har kuni 21:00-21:05 oralig'ida ertangi saharlik va 10:00-10:05 oralig'ida bugungi iftorlik vaqtini yuboradi.";
   await replyOrEdit(ctx, intro, buildCityKeyboard());
 }
 
