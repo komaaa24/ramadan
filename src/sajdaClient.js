@@ -7,6 +7,8 @@ const cache = new Map();
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const TASHKENT_TZ = "Asia/Tashkent";
 const RAMAZON_API_URL = process.env.RAMAZON_API_URL || "http://94.158.51.173:8080/ramazon/ramazon.php";
+const RAMAZON_NOTIFY_API_URL =
+  process.env.RAMAZON_NOTIFY_API_URL || "http://94.158.51.173:8080/ramazon/ramazon_tom.php";
 
 function toPositiveInt(value, fallback) {
   const parsed = Number(value);
@@ -197,11 +199,11 @@ function isRetryableError(error) {
   return ["ECONNABORTED", "ECONNRESET", "ETIMEDOUT", "ENOTFOUND", "EAI_AGAIN"].includes(code);
 }
 
-async function requestRamazonApi() {
+async function requestRamazonApi(url) {
   let lastError = null;
   for (let attempt = 1; attempt <= API_RETRY_COUNT; attempt += 1) {
     try {
-      return await axios.get(RAMAZON_API_URL, {
+      return await axios.get(url, {
         timeout: API_TIMEOUT_MS,
         headers: {
           "user-agent": "Mozilla/5.0 (compatible; ramadan-bot/2.0)",
@@ -218,15 +220,14 @@ async function requestRamazonApi() {
   throw lastError;
 }
 
-async function fetchRamazonSchedule({ force = false } = {}) {
-  const cacheKey = "ramazon-api";
+async function fetchScheduleFromApi({ force = false, cacheKey, url, remember = false } = {}) {
   const now = Date.now();
   const cached = cache.get(cacheKey);
   if (!force && cached && now - cached.ts < CACHE_TTL_MS) {
     return cached.payload;
   }
 
-  const response = await requestRamazonApi();
+  const response = await requestRamazonApi(url);
 
   const data = response?.data;
   if (!data || data.status !== "success" || !Array.isArray(data.list)) {
@@ -241,17 +242,38 @@ async function fetchRamazonSchedule({ force = false } = {}) {
   };
 
   cache.set(cacheKey, { ts: now, payload });
-  rememberSnapshot(payload);
+  if (remember) rememberSnapshot(payload);
   return payload;
 }
 
-async function fetchCitySchedule(cityKey, { force = false, targetDate = null, allowFutureFallback = true } = {}) {
+async function fetchRamazonSchedule({ force = false } = {}) {
+  return fetchScheduleFromApi({
+    force,
+    cacheKey: "ramazon-api",
+    url: RAMAZON_API_URL,
+    remember: true,
+  });
+}
+
+async function fetchRamazonNotifySchedule({ force = false } = {}) {
+  return fetchScheduleFromApi({
+    force,
+    cacheKey: "ramazon-notify-api",
+    url: RAMAZON_NOTIFY_API_URL,
+    remember: false,
+  });
+}
+
+async function fetchCitySchedule(
+  cityKey,
+  { force = false, targetDate = null, allowFutureFallback = true, source = "display" } = {}
+) {
   const city = findCityByKey(cityKey);
   if (!city) throw new Error(`Unknown city: ${cityKey}`);
 
-  const schedule = await fetchRamazonSchedule({ force });
+  const schedule = source === "notify" ? await fetchRamazonNotifySchedule({ force }) : await fetchRamazonSchedule({ force });
   let selectedSchedule = schedule;
-  if (targetDate && targetDate !== schedule.apiDate) {
+  if (source !== "notify" && targetDate && targetDate !== schedule.apiDate) {
     const snapshot = getSnapshotByDate(targetDate);
     if (snapshot) {
       selectedSchedule = snapshot;
@@ -285,6 +307,7 @@ module.exports = {
   CITIES,
   CACHE_TTL_MS,
   fetchCitySchedule,
+  fetchRamazonNotifySchedule,
   fetchRamazonSchedule,
   getDateInTashkent,
   pickDay,

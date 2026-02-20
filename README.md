@@ -1,6 +1,8 @@
 # Ramadan jadvali bot
 
-GrammY (Node.js) asosidagi Telegram bot. `http://94.158.51.173:8080/ramazon/ramazon.php` API dan saharlik/iftorlik vaqtlarini olib ishlaydi.
+GrammY (Node.js) asosidagi Telegram bot.
+- Ko'rsatish (`Bugungi jadval`) uchun: `http://94.158.51.173:8080/ramazon/ramazon.php`
+- Bildirishnoma (bugungi iftor + ertangi saharlik) uchun: `http://94.158.51.173:8080/ramazon/ramazon_tom.php`
 
 ## Ishga tushirish
 - `npm install`
@@ -18,9 +20,10 @@ GrammY (Node.js) asosidagi Telegram bot. `http://94.158.51.173:8080/ramazon/rama
 - Tanlangan shahar uchun tugmalar: **Bugungi jadval**, **Yangilash**, **Shaharlar**.
 - Avto-eslatma:
   - har kuni `21:00-21:05` oralig'ida: **Ertangi saharlik vaqti**
-  - har kuni `10:00-10:05` oralig'ida: **Bugungi iftorlik vaqti**
+  - har kuni `11:00-11:05` oralig'ida: **Bugungi iftorlik vaqti**
 
 ## Texnik eslatmalar
-- API URL: `RAMAZON_API_URL` (default: `http://94.158.51.173:8080/ramazon/ramazon.php`)
+- Display API URL: `RAMAZON_API_URL` (default: `http://94.158.51.173:8080/ramazon/ramazon.php`)
+- Notify API URL: `RAMAZON_NOTIFY_API_URL` (default: `http://94.158.51.173:8080/ramazon/ramazon_tom.php`)
 - Kesh: 5 daqiqa.
 - API retry/backoff: `API_RETRY_COUNT`, `API_RETRY_DELAY_MS`, `API_TIMEOUT_MS`

@@ -3,7 +3,6 @@ const { Bot, InlineKeyboard } = require("grammy");
 const {
   CITIES,
   fetchCitySchedule,
-  fetchRamazonSchedule,
   getDateInTashkent,
 } = require("./sajdaClient");
 const { initDb, closeDb, getUserRepo } = require("./db");
@@ -18,8 +17,8 @@ const TASHKENT_TZ = "Asia/Tashkent";
 const NOTIFY_CHECK_INTERVAL_MS = 60 * 1000;
 const SAHARLIK_NOTICE_WINDOW_START_MINUTES = 21 * 60;
 const SAHARLIK_NOTICE_WINDOW_END_MINUTES = 21 * 60 + 5;
-const IFTOR_NOTICE_WINDOW_START_MINUTES = 10 * 60;
-const IFTOR_NOTICE_WINDOW_END_MINUTES = 10 * 60 + 5;
+const IFTOR_NOTICE_WINDOW_START_MINUTES = 11 * 60;
+const IFTOR_NOTICE_WINDOW_END_MINUTES = 11 * 60 + 5;
 const DEFAULT_CITY_KEY = process.env.DEFAULT_CITY_KEY || "toshkent";
 
 const TEST_MODE = process.env.TEST_MODE === "true";
@@ -225,20 +224,18 @@ async function sendHtmlMessage(botInstance, chatId, text) {
   }
 }
 
-function shouldSendSaharlikReminder(now, userLastSaharlikDate, apiDate, tomorrowIsoDate) {
-  if (!apiDate || apiDate !== tomorrowIsoDate) return false;
-  if (normalizeDate(userLastSaharlikDate) === apiDate) return false;
+function shouldSendSaharlikReminder(now, row, userLastSaharlikDate, tomorrowIsoDate) {
+  if (!row?.saharlikEnd) return false;
+  if (normalizeDate(userLastSaharlikDate) === tomorrowIsoDate) return false;
   return (
     now.minutesOfDay >= SAHARLIK_NOTICE_WINDOW_START_MINUTES &&
     now.minutesOfDay <= SAHARLIK_NOTICE_WINDOW_END_MINUTES
   );
 }
 
-function shouldSendIftorReminder(now, row, userLastIftorDate, apiDate) {
-  if (!apiDate || normalizeDate(userLastIftorDate) === apiDate) return false;
-  if (now.isoDate !== apiDate) return false;
-
-  const iftorMinutes = parseTimeToMinutes(row.iftor);
+function shouldSendIftorReminder(now, row, userLastIftorDate) {
+  if (normalizeDate(userLastIftorDate) === now.isoDate) return false;
+  const iftorMinutes = parseTimeToMinutes(row?.iftor);
   if (!Number.isFinite(iftorMinutes)) return false;
 
   return (
@@ -263,10 +260,6 @@ function startNotificationScheduler(botInstance) {
       const now = getNowInTashkent();
       const tomorrowIsoDate = getDateInTashkent(1).isoDate;
 
-      const schedule = await fetchRamazonSchedule();
-      const apiDate = normalizeDate(schedule.apiDate);
-      if (!apiDate) return;
-
       const usersByCity = new Map();
       users.forEach((user) => {
         if (TEST_MODE && TEST_CHAT_ID && String(user.chatId) !== String(TEST_CHAT_ID)) return;
@@ -280,7 +273,7 @@ function startNotificationScheduler(botInstance) {
       for (const [cityKey, cityUsers] of usersByCity.entries()) {
         let payload;
         try {
-          payload = await fetchCitySchedule(cityKey);
+          payload = await fetchCitySchedule(cityKey, { source: "notify" });
         } catch (error) {
           console.warn("Schedule fetch failed:", cityKey, error?.message || error);
           continue;
@@ -294,18 +287,18 @@ function startNotificationScheduler(botInstance) {
           if (blockedChats.has(String(user.chatId))) continue;
           let touched = false;
 
-          if (shouldSendSaharlikReminder(now, user.lastSaharlikNotifyDate, apiDate, tomorrowIsoDate)) {
+          if (shouldSendSaharlikReminder(now, row, user.lastSaharlikNotifyDate, tomorrowIsoDate)) {
             const sent = await sendHtmlMessage(botInstance, user.chatId, formatSaharlikReminder(city, row));
             if (sent) {
-              user.lastSaharlikNotifyDate = apiDate;
+              user.lastSaharlikNotifyDate = tomorrowIsoDate;
               touched = true;
             }
           }
 
-          if (shouldSendIftorReminder(now, row, user.lastIftorNotifyDate, apiDate)) {
+          if (shouldSendIftorReminder(now, row, user.lastIftorNotifyDate)) {
             const sent = await sendHtmlMessage(botInstance, user.chatId, formatIftorReminder(city, row));
             if (sent) {
-              user.lastIftorNotifyDate = apiDate;
+              user.lastIftorNotifyDate = now.isoDate;
               touched = true;
             }
           }
@@ -352,7 +345,7 @@ async function replyOrEdit(ctx, text, keyboard) {
 async function sendCityMenu(ctx, hint) {
   const intro =
     hint ||
-    "Assalomu alaykum! Shaharni tanlang. Bot sizga har kuni 21:00-21:05 oralig'ida ertangi saharlik va 10:00-10:05 oralig'ida bugungi iftorlik vaqtini yuboradi.";
+    "Assalomu alaykum! Shaharni tanlang. Bot sizga har kuni 21:00-21:05 oralig'ida ertangi saharlik va 11:00-11:05 oralig'ida bugungi iftorlik vaqtini yuboradi.";
   await replyOrEdit(ctx, intro, buildCityKeyboard());
 }
 
@@ -372,10 +365,8 @@ bot.callbackQuery(/^city\|(.+)/, async (ctx) => {
 
   try {
     await upsertUserFromContext(ctx, { cityKey });
-    const todayIso = getNowInTashkent().isoDate;
-    const payload = await fetchCitySchedule(cityKey, { targetDate: todayIso, allowFutureFallback: true });
-    const label = payload.apiDate === todayIso ? "Bugungi jadval" : "Ertangi jadval (API)";
-    await replyOrEdit(ctx, formatDayMessage(payload.city, payload.row, label), buildCityActions(cityKey));
+    const payload = await fetchCitySchedule(cityKey, { source: "display" });
+    await replyOrEdit(ctx, formatDayMessage(payload.city, payload.row, "Bugungi jadval"), buildCityActions(cityKey));
   } catch (error) {
     await replyOrEdit(ctx, `Xatolik: ${escapeHtml(error.message || "jadvalni olishda xatolik")}`, buildCityKeyboard());
   }
@@ -389,14 +380,11 @@ bot.callbackQuery(/^(today|refresh)\|(.+)/, async (ctx) => {
 
   try {
     await upsertUserFromContext(ctx, { cityKey });
-    const todayIso = getNowInTashkent().isoDate;
     const payload = await fetchCitySchedule(cityKey, {
       force,
-      targetDate: todayIso,
-      allowFutureFallback: true,
+      source: "display",
     });
-    const label = payload.apiDate === todayIso ? "Bugungi jadval" : "Ertangi jadval (API)";
-    await replyOrEdit(ctx, formatDayMessage(payload.city, payload.row, label), buildCityActions(cityKey));
+    await replyOrEdit(ctx, formatDayMessage(payload.city, payload.row, "Bugungi jadval"), buildCityActions(cityKey));
   } catch (error) {
     await replyOrEdit(ctx, `Xatolik: ${escapeHtml(error.message || "jadvalni olishda muammo")}`, buildCityActions(cityKey));
   }
@@ -408,10 +396,8 @@ bot.callbackQuery(/^(tomorrow|month)\|(.+)/, async (ctx) => {
 
   try {
     await upsertUserFromContext(ctx, { cityKey });
-    const todayIso = getNowInTashkent().isoDate;
-    const payload = await fetchCitySchedule(cityKey, { targetDate: todayIso });
-    const label = payload.apiDate === todayIso ? "Bugungi jadval" : "Ertangi jadval (API)";
-    await replyOrEdit(ctx, formatDayMessage(payload.city, payload.row, label), buildCityActions(cityKey));
+    const payload = await fetchCitySchedule(cityKey, { source: "display" });
+    await replyOrEdit(ctx, formatDayMessage(payload.city, payload.row, "Bugungi jadval"), buildCityActions(cityKey));
   } catch (error) {
     await replyOrEdit(ctx, `Xatolik: ${escapeHtml(error.message || "jadvalni olishda muammo")}`, buildCityActions(cityKey));
   }
