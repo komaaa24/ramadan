@@ -17,6 +17,7 @@ GrammY (Node.js) asosidagi Telegram bot.
 
 ## Foydalanish
 - `/start` — shahar tanlash menyusi.
+- `/stats` — admin statistikasi (faqat admin ID uchun).
 - Tanlangan shahar uchun tugmalar: **Bugungi jadval**, **Yangilash**, **Shaharlar**.
 - Avto-eslatma:
   - har kuni `21:00-21:05` oralig'ida: **Ertangi saharlik vaqti**

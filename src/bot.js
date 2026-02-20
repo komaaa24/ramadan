@@ -1,5 +1,6 @@
 require("dotenv").config();
 const { Bot, InlineKeyboard } = require("grammy");
+const { IsNull, MoreThan, Not } = require("typeorm");
 const {
   CITIES,
   fetchCitySchedule,
@@ -20,6 +21,12 @@ const SAHARLIK_NOTICE_WINDOW_END_MINUTES = 21 * 60 + 5;
 const IFTOR_NOTICE_WINDOW_START_MINUTES = 11 * 60 + 20;
 const IFTOR_NOTICE_WINDOW_END_MINUTES = 11 * 60 + 25;
 const DEFAULT_CITY_KEY = process.env.DEFAULT_CITY_KEY || "toshkent";
+const PRIMARY_ADMIN_CHAT_ID = "7789445876";
+const ADMIN_CHAT_IDS = new Set(
+  [PRIMARY_ADMIN_CHAT_ID, ...(process.env.ADMIN_CHAT_IDS || "").split(",")]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+);
 
 const TEST_MODE = process.env.TEST_MODE === "true";
 const TEST_CHAT_ID = process.env.TEST_CHAT_ID || null;
@@ -161,6 +168,11 @@ function getNowInTashkent() {
 
 function getChatId(ctx) {
   return ctx.chat?.id ?? ctx.from?.id ?? null;
+}
+
+function isAdminChat(chatId) {
+  if (!chatId) return false;
+  return ADMIN_CHAT_IDS.has(String(chatId));
 }
 
 function findCityByKey(cityKey) {
@@ -352,6 +364,34 @@ async function sendCityMenu(ctx, hint) {
 bot.command(["start", "help"], async (ctx) => {
   await upsertUserFromContext(ctx);
   await sendCityMenu(ctx);
+});
+
+bot.command("stats", async (ctx) => {
+  const chatId = getChatId(ctx);
+  if (!isAdminChat(chatId)) {
+    await ctx.reply("Bu buyruq faqat admin uchun.");
+    return;
+  }
+
+  const repo = getUserRepo();
+  const totalUsers = await repo.count();
+  const usersWithCity = await repo.count({ where: { cityKey: Not(IsNull()) } });
+  const defaultCityUsers = await repo.count({ where: { cityKey: DEFAULT_CITY_KEY } });
+  const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const active24hUsers = await repo.count({ where: { updatedAt: MoreThan(last24h) } });
+  const now = getNowInTashkent();
+
+  await ctx.reply(
+    [
+      "📊 <b>Bot statistikasi</b>",
+      `🕒 Vaqt (Tashkent): <b>${escapeHtml(now.isoDate)}</b>`,
+      `👥 Jami foydalanuvchi (DB): <b>${totalUsers}</b>`,
+      `✅ Shahar tanlaganlar: <b>${usersWithCity}</b>`,
+      `📍 Default (${escapeHtml(DEFAULT_CITY_KEY)}) bo'yicha: <b>${defaultCityUsers}</b>`,
+      `⚡ Oxirgi 24 soat faol: <b>${active24hUsers}</b>`,
+    ].join("\n"),
+    { parse_mode: "HTML" }
+  );
 });
 
 bot.callbackQuery("cities", async (ctx) => {
