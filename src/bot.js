@@ -17,8 +17,8 @@ const TASHKENT_TZ = "Asia/Tashkent";
 const NOTIFY_CHECK_INTERVAL_MS = 60 * 1000;
 const SAHARLIK_NOTICE_WINDOW_START_MINUTES = 21 * 60;
 const SAHARLIK_NOTICE_WINDOW_END_MINUTES = 21 * 60 + 5;
-const IFTOR_NOTICE_WINDOW_START_MINUTES = 11 * 60;
-const IFTOR_NOTICE_WINDOW_END_MINUTES = 11 * 60 + 5;
+const IFTOR_NOTICE_WINDOW_START_MINUTES = 11 * 60 + 20;
+const IFTOR_NOTICE_WINDOW_END_MINUTES = 11 * 60 + 25;
 const DEFAULT_CITY_KEY = process.env.DEFAULT_CITY_KEY || "toshkent";
 
 const TEST_MODE = process.env.TEST_MODE === "true";
@@ -345,7 +345,7 @@ async function replyOrEdit(ctx, text, keyboard) {
 async function sendCityMenu(ctx, hint) {
   const intro =
     hint ||
-    "Assalomu alaykum! Shaharni tanlang. Bot sizga har kuni 21:00-21:05 oralig'ida ertangi saharlik va 11:00-11:05 oralig'ida bugungi iftorlik vaqtini yuboradi.";
+    "Assalomu alaykum! Shaharni tanlang. Bot sizga har kuni 21:00-21:05 oralig'ida ertangi saharlik va 11:20-11:25 oralig'ida bugungi iftorlik vaqtini yuboradi.";
   await replyOrEdit(ctx, intro, buildCityKeyboard());
 }
 

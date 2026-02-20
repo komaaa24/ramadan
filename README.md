@@ -20,7 +20,7 @@ GrammY (Node.js) asosidagi Telegram bot.
 - Tanlangan shahar uchun tugmalar: **Bugungi jadval**, **Yangilash**, **Shaharlar**.
 - Avto-eslatma:
   - har kuni `21:00-21:05` oralig'ida: **Ertangi saharlik vaqti**
-  - har kuni `11:00-11:05` oralig'ida: **Bugungi iftorlik vaqti**
+  - har kuni `11:20-11:25` oralig'ida: **Bugungi iftorlik vaqti**
 
 ## Texnik eslatmalar
 - Display API URL: `RAMAZON_API_URL` (default: `http://94.158.51.173:8080/ramazon/ramazon.php`)
